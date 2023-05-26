@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="107.30425mm"
+   height="47.816231mm"
+   viewBox="0 0 107.30425 47.816231"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="c-dur.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.393294"
+     inkscape:cx="207.78098"
+     inkscape:cy="8.9715448"
+     inkscape:window-width="1862"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Vrstva 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-41.451079,-77.330139)">
+    <g
+       id="g22533"
+       transform="matrix(0.91435506,0,0,0.91435506,7.9776392,8.6705438)">
+      <g
+         id="g44295"
+         transform="matrix(0.66704048,0,0,0.66704048,6.7563019,34.055917)"
+         style="fill:#000000">
+        <g
+           aria-label="♪"
+           id="text1662"
+           style="font-size:92.2576px;line-height:1.25;font-family:FreeSerif;-inkscape-font-specification:FreeSerif;letter-spacing:0px;word-spacing:0px;fill:#000000;stroke-width:2.30645">
+          <path
+             d="m 57.294905,130.19334 c 0,3.78256 3.690304,6.36577 7.65738,6.36577 6.827063,0 14.484443,-4.79739 14.484443,-11.99349 V 85.079371 c 8.118669,0.553546 13.247224,3.227108 14.286235,7.592613 1.03901,4.365505 0.07117,10.189996 -2.574777,18.168286 H 93.27011 C 96.491153,104.62603 98.288124,96.599116 96.352376,90.143483 94.416627,83.68785 82.388972,84.341311 79.344471,64.874957 h -1.93741 v 54.616503 c -1.383864,-0.92258 -3.505789,-1.56838 -5.443198,-1.56838 -6.734805,0 -14.668958,5.62771 -14.668958,12.27026 z"
+             id="path25576"
+             sodipodi:nodetypes="sssczcczcccss"
+             style="fill:#000000" />
+        </g>
+        <rect
+           style="fill:#000000;stroke-width:5.86757;stroke-linejoin:round"
+           id="rect26550"
+           width="32.041283"
+           height="2.4674845"
+           x="52.013"
+           y="126.46061"
+           rx="1.8593055e-15" />
+      </g>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:33.1483px;line-height:1.25;font-family:'Dancing Script';-inkscape-font-specification:'Dancing Script';letter-spacing:0px;word-spacing:0px;fill:#000080;fill-opacity:1;stroke:none;stroke-width:0.828709"
+         x="79.575699"
+         y="116.58923"
+         id="text11353"><tspan
+           sodipodi:role="line"
+           id="tspan11351"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Dancing Script';-inkscape-font-specification:'Dancing Script';fill:#000080;stroke-width:0.828709"
+           x="79.575699"
+           y="116.58923">C.</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:33.1483px;line-height:1.25;font-family:'Dancing Script';-inkscape-font-specification:'Dancing Script';letter-spacing:0px;word-spacing:0px;fill:#000080;fill-opacity:1;stroke:none;stroke-width:0.828709"
+         x="103.87263"
+         y="116.58676"
+         id="text17567"><tspan
+           sodipodi:role="line"
+           id="tspan17565"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Dancing Script';-inkscape-font-specification:'Dancing Script';fill:#000080;stroke-width:0.828709"
+           x="103.87263"
+           y="116.58676">dur.</tspan></text>
+    </g>
+  </g>
+</svg>
