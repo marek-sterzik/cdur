@@ -1,0 +1,21 @@
+{
+  "name": "cdur",
+  "description": "C.dur. is a JavaScript library providing durable components for React",
+  "homepage": "https://github.com/marek-sterzik/cdur",
+  "keywords": [
+    "C.dur.",
+    "durable components",
+    "React"
+  ],
+  "dependencies": {
+    "react": ">=18.0.0"
+  },
+  "author": {
+    "name": "Marek Sterzik",
+    "email": "marek.sterzik@gmail.com"
+  },
+  "main": "src/index.js",
+  "type": "module",
+  "license": "MIT",
+  "version": "0.0.1"
+}
