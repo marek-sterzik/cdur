@@ -45,7 +45,7 @@ export default function createReactComponent(component)
         renderContent()
         {
             if (this.component._disconnected) {
-                return <>Error: This component was disconnected</>
+                return React.createElement(React.Fragment, {}, "Error: This component was disconnected")
             } else if (this.component.isWaitingState()) {
                 if (this.component.canWait()) {
                     return this.component.renderWait()
