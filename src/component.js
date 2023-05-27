@@ -62,7 +62,7 @@ export default class Component
         }
     }
 
-    canWait = () => {
+    isAbleToWait = () => {
         return "renderWait" in this;
     }
 
@@ -71,7 +71,7 @@ export default class Component
     }
 
     waitStart = () => {
-        if (this._internal.waiting == 0 && !this.canWait()) {
+        if (this._internal.waiting == 0 && !this.isAbleToWait()) {
             const parent = this.parent()
             if (parent) {
                 parent.waitStart()
@@ -95,7 +95,7 @@ export default class Component
         } else {
             throw "called waitFinish without waitStart"
         }
-        if (this._internal.waiting == 0 && !this.canWait()) {
+        if (this._internal.waiting == 0 && !this.isAbleToWait()) {
             const parent = this.parent()
             if (parent) {
                 parent.waitFinish()
@@ -113,12 +113,19 @@ export default class Component
 
     disconnect = () => {
         this._disconnected = true
-        delete this._parent._children[this.id]
-        if (this._parent !== null && this.isWaitingState() && !this.canWait()) {
-            this._parent.waitFinish()
+        if (this._parent !== null) {
+            delete this._parent._children[this.id]
+            if (this.isWaitingState() && !this.isAbleToWait()) {
+                this._parent.waitFinish()
+            }
         }
-        this.context = {}
         this._parent = null
+        for (var id in this._children) {
+            this._children[id].disconnect()
+        }
+        if ("destroy" in this) {
+            this.destroy()
+        }
         notifyReactChanged(this)
     }
 

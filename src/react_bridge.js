@@ -38,7 +38,7 @@ export default (component) => class extends React.Component {
         if (this.component._disconnected) {
             return React.createElement(React.Fragment, {}, "Error: This component was disconnected")
         } else if (this.component.isWaitingState()) {
-            if (this.component.canWait()) {
+            if (this.component.isAbleToWait()) {
                 return this.component.renderWait()
             } else {
                 return null
