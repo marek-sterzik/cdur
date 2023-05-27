@@ -7,7 +7,7 @@ export default (component) => class extends React.Component {
         this.state = {"s": 1}
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         const index = this.component._mountedReactComponents.indexOf(this);
         if (index <= -1) {
             this.component._mountedReactComponents.push(this)
@@ -15,18 +15,18 @@ export default (component) => class extends React.Component {
         this.updateState()
     }
 
-    componentWillUnmount() {
+    componentWillUnmount = () => {
         const index = this.component._mountedReactComponents.indexOf(this);
         if (index > -1) {
             this.component._mountedReactComponents.splice(index, 1);
         }
     }
 
-    updateState() {
+    updateState = () => {
         this.setState({"s": this.state.s + 1})
     }
 
-    render() {
+    render = () => {
         var content = this.renderContent()
         if ("decorate" in this.component) {
             content = this.component.decorate(content)
@@ -34,7 +34,7 @@ export default (component) => class extends React.Component {
         return content
     }
 
-    renderContent() {
+    renderContent = () => {
         if (this.component._disconnected) {
             return React.createElement(React.Fragment, {}, "Error: This component was disconnected")
         } else if (this.component.isWaitingState()) {
