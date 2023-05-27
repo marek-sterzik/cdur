@@ -19,7 +19,7 @@ import Cdur from "cdur"
 ```
 
 
-To create a durable component, you need just to derive a class from 
+To create a durable component, you need just to derive a class from
 `Cdur.Component`:
 
 ```jsx
@@ -128,7 +128,7 @@ class MyStatefulComponent
         this.waitStart()
         setTimeout((function(){
              this.setState({"enabled": !this.state.enabled})
-             this.waitFinish()  
+             this.waitFinish()
         }).bind(this), 1000)
     }
 }
@@ -145,22 +145,14 @@ Or you may also write the promise directly to the state using `setState()`:
 ```jsx
 this.setState({"data": promise})
 ```
+
 In this case this will happen:
 
-* `setState()` writes temporarily the promise itself in `this.state.data`.
 * `setState()` also enters the component waiting state
 * when the promise is resolved, the result of the promise is written to `this.state.data`
-* the component waiting state is leaved
+* the component waiting state is leaved then
 
-Note, that this works only in case, you pass the promise directly as a value of the object passed to `setState()`. `setState()` will **not** do any object deep inspection if the promise is not hidden somewhere in the data structure.
-
-_C.dur._ also contains a helper function `Cdur.waiting()` to deal with these temporarily written promises in the state. This function makes sense only in cases, when renderWait() is rendering the component even in case not all data are available. The function may be used in this way:
-
-```jsx
-Cdur.waiting(this.state.data, null)
-```
-
-The intention is just to replace the promise by some default value until the promise is resolved.
+The behavior of writing promises to the state is described in detail later.
 
 ### Getting the waiting state
 
@@ -275,6 +267,91 @@ There is only one difference between both:
 
 The context has this semantics: The content of any context variable is automatically inherited to subcomponents. Subcomponents may read the inherited values. In case a subcomponent will write a value to the context, the parent value becomes inaccessible.
 
+## State/Context setting functions
+
+For setting the state and/or context there are two methods available: `this.setState()` and `this.setContext()` both may be invoked with the exact same arguments. We will demonstrate the usage of `this.setState()`, but exactly the same holds for `this.setContext()`.
+
+The `setState()` method may be invoked in two main ways:
+
+1. `this.setState(setProps, resolveFunction = false)`
+2. `this.setState(propId, value, resolveFunction = false)`
+
+The first variant sets a bunch of properties (given as keys of `setProps`) to the corresponding values. The second variant sets just a single property identified by `propId` to the value `value`. Both variants understands the property identification in the same way. But first variant allows the property identifier be string only, second variant allows also the property being identified by an array (see below).
+
+If `resolveFunction` is true, and the value (or values) are callable functions, the value will be interpreted as a function passing the original value of the property to that function and expecting the result of the function being set back to the same property.
+
+### Identification of the property
+
+The property may be identified either by a string or by an array. When identified by a string, the string is interpreted as a dot-separated array of properties. For example:
+
+```jsx
+this.setState("a.b.c.0", 12)
+```
+
+would be equivalent to:
+
+```jsx
+this.state.a.b.c[0] = 12
+```
+
+If you want to access a property containing a dot in its name, you may identify the property by an array. Let say, we want to change the value `this.state["a.b"].c`. Then it may be done by the command:
+
+```jsx
+this.setState(["a.b", "c"], 12)
+```
+
+There is also a special property name `@` for the string variant of the property identification meaning "_push the value in the array_." Using `@` for non-arrays will lead to undefined behavior. For example. Lets `this.state.names` contains an array of names and we want to push a new item into that array. It may be done using
+```jsx
+this.setState("names.@", "John Doe")
+```
+
+If you want to write the example above in the _array_ identification syntax, you will need a special constant `Cdur.consts.S_PUSH` into that array:
+```
+this.setState(["names", Cdur.consts.S_PUSH], "John Doe")
+```
+
+### Resolving promises
+
+If the value being passed to `setState()`/`setContext()` is a _promise_ then _C.dur._ will trigger an asynchronous write to that property. The asynchronous write may be easily fine-tuned and different aspects of the asynchronous operation may be controlled. These aspects are currently tunable:
+
+* what will be written into the state until the promise is finished
+* what will be written into the state when the promise will fail
+
+To trigger the asynchronous write, a promise (object with `thenable` interface) must be passed as the value for `setState()`/`setContext()`. `setState()`/`setContext()` **does not do** any deep inspection of the value and in case the promise is for example just one property of the value (i.e. passing `{data: promise}` as the value for example), the data are written synchronously.
+
+If you want to fine-tune the behavior of the promise according to the values written during the promise life time, you need to turn any promise or value into a _smart_ promise by calling:
+```jsx
+smartPromise = Cdur.promise(dumbPromise)
+```
+Then you may use different methods of the smart promise:
+```jsx
+// write null when the promise is not resolved:
+smartPromise.writeNullOnWait()
+
+// write the promise itself when the promise is not resolved:
+smartPromise.writePromiseOnWait()
+
+// write null when the promise is rejected:
+smartPromise.writeNullOnError()
+
+// write the error object itself causing the promise to be rejected:
+smartPromise.writeErrorOnError()
+
+// write anything when waiting for the result:
+smartPromise.writeOnWait((promise) => anyFunction(promise))
+
+// write anything when the promise is rejected:
+smartPromise.writeOnError((error) => anyFunction(error))
+```
+
+For example, if we want to make an async state write writing null even when the value is not ready or when the promise fails, one may write this code:
+```jsx
+this.setState(
+    "data",
+    Cdur.promise(dumbPromise).writeNullOnWait().writeNullOnError()
+)
+```
+
 ## Lifecycle of a component
 
 The life cycle of any component is controlled explicitely. Components may be created or destroyed.
@@ -369,7 +446,3 @@ _C.dur._ uses internally some functions, which are used to get a proper type hin
 
 * `Cdur.isPromise(value)` tests if `value` is a promise. _C.dur._ uses this function internally to recognize if a value is a promise (i.e. needs asynchronous handling) or it is not (synchronous access is possible)
 * `Cdur.isCallable(value)` tests if `value` is a callable function, but not a class, which is in fact a function in JavaScript as well. This function is used in `setState()`/`setContext()` methods.
-
-## To be documented
-
-* `setState()`/`setContext()` in detail
