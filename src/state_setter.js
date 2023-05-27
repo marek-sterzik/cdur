@@ -1,5 +1,6 @@
 import {S_PUSH} from "./consts.js"
 import {isPromise, isCallable} from "./util.js"
+import promise from "./promise.js"
 
 const parseKey = (key) => {
     var keys = []
@@ -77,18 +78,18 @@ const resolveWrite = (trigger, object, key, value, resolveFunction) => {
     if (resolveFunction && isCallable(value)) {
         value = value(object[key])
     }
-    const changed = doWrite(object, key, value)
-    if (isPromise(value)) {
-        trigger("waitStart")
-        value.finally(() => {
-            trigger("waitFinish")
-        }).then((data) => {
-            if (object[key] === value) {
-                doWrite(object, key, data)
-                trigger("changed")
-            }
-        })
+    var changed = false
+    const writer = (value, immediately) => {
+        doWrite(object, key, value)
+        if (immediately) {
+            changed = true
+        } else {
+            trigger.changed()
+        }
     }
+    
+    promise(value).writeValue(writer, () => trigger.waitStart(), () => trigger.waitFinish())
+    
     return changed
 }
 
@@ -143,7 +144,7 @@ const setState = (variable, trigger, ...args) => {
         }
     }
     if (changed) {
-        trigger("changed")
+        trigger.changed()
     }
 }
 

@@ -2,38 +2,8 @@ import {createReactComponent} from "./react_bridge.js"
 import Notifier from "./notifier.js"
 import setState from "./state_setter.js"
 import {isPromise} from "./util.js"
-
-const getComponentTrigger = (component, recursively) => {
-    return (type) => {
-        switch(type) {
-            case 'changed':
-                if (recursively) {
-                    notifyReactChangedRecursively(component)
-                } else {
-                    notifyReactChanged(component)
-                }
-                break;
-            case 'waitStart':
-                component.waitStart()
-                break;
-            case 'waitFinish':
-                component.waitFinish()
-                break;
-            default:
-                console.error("Invalid component trigger invoked: " + type)
-        }
-    }
-}
-
-const notifyReactChanged = (component) => component._notifier.notify(component)
-
-const notifyReactChangedRecursively = (component) => {
-        for (var id in this._children) {
-            notifyReactChangedRecursively(this._children[id])
-        }
-        notifyReactChanged(this)
-    }
-
+import {getComponentTrigger, notifyReactChanged} from "./trigger.js"
+import consts from "./consts.js"
 
 var componentId = 1
 
@@ -62,6 +32,8 @@ export default class Component
             this.init(...args)
         }
     }
+
+    getAsyncWriteMode = () => consts.AW_NONE
 
     isAbleToWait = () => {
         return "renderWait" in this;
