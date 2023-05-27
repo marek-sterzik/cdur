@@ -29,8 +29,7 @@ var componentId = 1
 
 export default class Component
 {
-    constructor(parent, args)
-    {
+    constructor(parent, args) {
         this.id = "" + (componentId++)
         this._disconnected = false
         if (parent) {
@@ -53,18 +52,15 @@ export default class Component
         }
     }
 
-    canWait()
-    {
+    canWait() {
         return "renderWait" in this;
     }
 
-    isWaitingState()
-    {
+    isWaitingState() {
         return this._internal.waiting > 0
     }
 
-    waitStart()
-    {
+    waitStart() {
         if (this._internal.waiting == 0 && !this.canWait()) {
             const parent = this.parent()
             if (parent) {
@@ -75,16 +71,14 @@ export default class Component
         this.notifyReactChanged()
     }
 
-    waitFor(promise)
-    {
+    waitFor(promise) {
         if (isPromise(promise)) {
             this.waitStart()
             promise.finally(this.waitFinish.bind(this))
         }
     }
 
-    waitFinish()
-    {
+    waitFinish() {
         if (this._internal.waiting > 0) {
             this._internal.waiting--
             this.notifyReactChanged()
@@ -99,41 +93,34 @@ export default class Component
         }
     }
 
-    notifyReactChangedRecursively()
-    {
+    notifyReactChangedRecursively() {
         for (var id in this._children) {
             this._children[id].notifyReactChangedRecursively()
         }
         this.notifyReactChanged()
     }
 
-    notifyReactChanged()
-    {
+    notifyReactChanged() {
         this._notifier.notify(this)
     }
 
-    setState(...args)
-    {
+    setState(...args) {
         setState(this.state, getComponentTrigger(this, false), ...args)
     }
 
-    setContext(...args)
-    {
+    setContext(...args) {
         setState(this.context, getComponentTrigger(this, false), ...args)
     }
 
-    createSubComponent(subcomponentClass, ...args)
-    {
+    createSubComponent(subcomponentClass, ...args) {
         return (new subcomponentClass(this, args)).view()
     }
 
-    parent()
-    {
+    parent() {
         return this._parent
     }
 
-    disconnect()
-    {
+    disconnect() {
         this._disconnected = true
         delete this._parent._children[this.id]
         if (this._parent !== null && this.isWaitingState() && !this.canWait()) {
@@ -144,13 +131,11 @@ export default class Component
         this.notifyReactChanged()
     }
 
-    getId()
-    {
+    getId() {
         return this.id
     }
 
-    static createRootComponent(...args)
-    {
+    static createRootComponent(...args) {
         return createReactComponent(new this(null, args))
     }
 }

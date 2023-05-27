@@ -1,4 +1,4 @@
-function isPromise(p) {
+const isPromise = (p) => {
   if (
     p !== null &&
     typeof p === 'object' &&
@@ -12,13 +12,11 @@ function isPromise(p) {
   return false;
 }
 
-function isCallable(f)
-{
+const isCallable = (f) => {
     return typeof f === 'function' && !/^class\s/.test(Function.prototype.toString.call(f));
 }
 
-function waiting(data, waitValue)
-{
+const waiting = (data, waitValue) => {
     return data
     if (isPromise(data)) {
         return waitValue

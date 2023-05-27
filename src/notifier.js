@@ -1,22 +1,19 @@
 class Notifier
 {
-    constructor()
-    {
+    constructor() {
         this.notifications = {}
         this.timeoutEnabled = false
     }
     
-    notify(object)
-    {
+    notify = (object) => {
         this.notifications[object.id] = object
         if (!this.timeoutEnabled) {
             this.timeoutEnabled = true
-            setTimeout(this.execute.bind(this), 0)
+            setTimeout(this.execute, 0)
         }
     }
 
-    execute()
-    {
+    execute = () => {
         this.timeoutEnabled = false
         for (var id in this.notifications) {
             this.notifyReact(this.notifications[id])
@@ -24,8 +21,7 @@ class Notifier
         this.notifications = {}
     }
 
-    notifyReact(component)
-    {
+    notifyReact = (component) => {
         for (var reactComponent of component._mountedReactComponents) {
             reactComponent.updateState()
         }

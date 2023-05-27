@@ -1,8 +1,7 @@
 import {S_PUSH} from "./consts.js"
 import {isPromise, isCallable} from "./util.js"
 
-function parseKey(key)
-{
+const parseKey = (key) => {
     var keys = []
     for (var k of key.split(/\./)) {
         if (k.match(/^[0-9]+$/)) {
@@ -15,8 +14,7 @@ function parseKey(key)
     return keys
 }
 
-function parseArgs(args)
-{
+const parseArgs = (args) => {
     if (args.length == 0) {
         throw "Arguments for setState()/setContext() method cannot be empty"
     }
@@ -56,24 +54,30 @@ function parseArgs(args)
 }
 
 
-function doWrite(object, key, value)
-{
+const doWrite = (object, key, value) => {
+    var changed = false
     if (value !== undefined) {
+        if (object[key] !== value) {
+            changed = true
+        }
         object[key] = value
     } else {
+        if (key in object) {
+            changed = true
+        }
         delete object[key]
     }
+    return changed
 }
 
-function resolveWrite(trigger, object, key, value, resolveFunction)
-{
+const resolveWrite = (trigger, object, key, value, resolveFunction) => {
     if (key === S_PUSH) {
         key = object.length
     }
     if (resolveFunction && isCallable(value)) {
         value = value(object[key])
     }
-    doWrite(object, key, value)
+    const changed = doWrite(object, key, value)
     if (isPromise(value)) {
         trigger("waitStart")
         value.finally(() => {
@@ -85,11 +89,11 @@ function resolveWrite(trigger, object, key, value, resolveFunction)
             }
         })
     }
+    return changed
 }
 
 
-function changeStateSingle(variable, trigger, keys, value, resolveFunction)
-{
+const setStateSingle = (variable, trigger, keys, value, resolveFunction) => {
     const lastKey = keys.pop()
     var obj = variable
     var oldKey = null
@@ -113,16 +117,20 @@ function changeStateSingle(variable, trigger, keys, value, resolveFunction)
             oldKey = obj.length
         }
     }
-    resolveWrite(trigger, obj, lastKey, value, resolveFunction)
+    return resolveWrite(trigger, obj, lastKey, value, resolveFunction)
 }
 
-function setState(variable, trigger, ...args)
-{
+const setState = (variable, trigger, ...args) => {
     args = parseArgs(args)
+    var changed = false
     for (var write of args.writes) {
-        changeStateSingle(variable, trigger, write.key, write.value, args.resolveFunction)
+        if (setStateSingle(variable, trigger, write.key, write.value, args.resolveFunction)) {
+            changed = true
+        }
     }
-    trigger("changed")
+    if (changed) {
+        trigger("changed")
+    }
 }
 
 export default setState
