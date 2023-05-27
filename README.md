@@ -40,7 +40,7 @@ Since the lifetime of _C.dur._ components is independent on React, you need firs
 const MyComponentInstance = MyComponent.createRootComponent()
 ```
 
-This will create a new instance of `MyComponent`. In fact, `MyComponentInstance` is not directly the instance of `MyComponent`, but it is closely related it. `MyComponentInstance` is a React component instead, which you may directly use in your jsx code. For example:
+This will create a new instance of `MyComponent`. In fact, `MyComponentInstance` is not directly the instance of `MyComponent`, but it is closely related. `MyComponentInstance` is a React component instead, which you may directly use in your jsx code. For example:
 ```jsx
 ReactDOM.createRoot(document.getElementById('root')).render(<MyComponentInstance />);
 
