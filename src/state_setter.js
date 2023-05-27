@@ -92,6 +92,17 @@ const resolveWrite = (trigger, object, key, value, resolveFunction) => {
     return changed
 }
 
+const hasOwnProperty = (obj, key) => {
+    if ("hasOwn" in Object) {
+        return Object.hasOwn(obj, key)
+    } else {
+        return obj.hasOwnProperty(key)
+    }
+}
+
+const accessForWrite = (obj, key) => {
+    return hasOwnProperty(obj, key) ? obj[key] : undefined
+}
 
 const setStateSingle = (variable, trigger, keys, value, resolveFunction) => {
     const lastKey = keys.pop()
@@ -107,14 +118,14 @@ const setStateSingle = (variable, trigger, keys, value, resolveFunction) => {
                 obj[oldKey] = []
                 changed = true
             }
-            obj = obj[oldKey]
+            obj = accessForWrite(obj, oldKey)
             oldKey = null
         }
         if (k !== S_PUSH) {
             if (obj[k] === undefined) {
                 oldKey = k
             } else {
-                obj = obj[k]
+                obj = accessForWrite(obj, k)
             }
         } else {
             oldKey = obj.length

@@ -260,6 +260,20 @@ By default the component recognizes automatically if it is able to handle the wa
 
 But this default behavior may be changed by just overriding the method `isAbleToWait()`. If the overriden method returns `true`, the component is considered as being able to handle the wait state and it is considered as NOT being able to handle the wait state otherwise. **The result of this function does not affect the rendering of the component, it just controls the propagation of the waiting state to the parent.**
 
+## State and Context
+
+_C.dur._ components may use two different types of its internal state:
+
+1. The already explained `this.state` variable
+2. The variable `this.context`
+
+Both variables behave very similarly. Both define an object with attributes. Both needs to be changed only using a special method (`this.state` is changed by `this.setState()` and `this.context` is changed by `this.setContext()` - arguments of both methods are exactly the same). Both may be used inside of render methods.
+
+There is only one difference between both:
+
+**While state is completely private to a component, context is automatically inherited to subcomponents.**
+
+The context has this semantics: The content of any context variable is automatically inherited to subcomponents. Subcomponents may read the inherited values. In case a subcomponent will write a value to the context, the parent value becomes inaccessible.
 
 ## Lifecycle of a component
 
@@ -358,5 +372,4 @@ _C.dur._ uses internally some functions, which are used to get a proper type hin
 
 ## To be documented
 
-* state vs context
 * `setState()`/`setContext()` in detail
