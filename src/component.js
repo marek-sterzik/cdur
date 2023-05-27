@@ -53,6 +53,7 @@ export default class Component
         this.state = {}
         this._internal = {"waiting": 0}
         this._parent = parent
+        this._parentWaiting = false
         this._mountedReactComponents = []
         const view = createReactComponent(this)
         this.view = () => view
@@ -71,11 +72,9 @@ export default class Component
     }
 
     waitStart = () => {
-        if (this._internal.waiting == 0 && !this.isAbleToWait()) {
-            const parent = this.parent()
-            if (parent) {
-                parent.waitStart()
-            }
+        if (!this.isAbleToWait() && !this._parentWaiting && this._parent) {
+            this._parentWaiting = true
+            this._parent.waitStart()
         }
         this._internal.waiting++
         notifyReactChanged(this)
@@ -95,11 +94,9 @@ export default class Component
         } else {
             throw "called waitFinish without waitStart"
         }
-        if (this._internal.waiting == 0 && !this.isAbleToWait()) {
-            const parent = this.parent()
-            if (parent) {
-                parent.waitFinish()
-            }
+        if (this._internal.waiting == 0 && this._parentWaiting) {
+            this._parentWaiting = false
+            this._parent.waitFinish()
         }
     }
 
