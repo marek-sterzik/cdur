@@ -162,6 +162,13 @@ Cdur.waiting(this.state.data, null)
 
 The intention is just to replace the promise by some default value until the promise is resolved.
 
+### Getting the waiting state
+
+To get the current waiting state of the compoennt, you may call:
+```jsx
+this.isWaitingState()
+```
+
 ## Subcomponents
 
 _C.dur._ components provides a way how to easily create subcomponents. A subcomponent is a regular _C.dur._ component, but having some another _C.dur._ component as a parent. All funcitons described above are also available for subcomponents. But subcomponents are bound together with their parent.
@@ -304,12 +311,52 @@ class MyComponent extends Cdur.Component
 }
 ```
 
+## Mounting _C.dur._ components directly to React
+
+Sometimes it could be useful to mount _C.dur._ components directly into react using the standard React visual model to drive the life cycle of the component. It does not make any sense to use a _C.dur._ component in such a mode as a single standalone component (use a React stateful component instead), but it makes sense if used together with subcomponents. In such a case root component is not really durable with respect to the React lifecycle, but children of the root component may still be durable with respect to the root component. I.e. children are durable even in a case, root component decides not to render the children.
+
+To mount a _C.dur._ component in this "non-durable" mode, you may use the `Cdur.Mount` React component:
+```jsx
+<Cdur.Mount component={MyComponent} />
+```
+If you want to pass some component arguments, use:
+```jsx
+<Cdur.Mount component={MyComponent} args={["a", "b", "c"]} />
+```
+
+## Misc functions
+
+### Component decoration
+
+Any _C.dur._ component may be decorated by some React component. The result of the `render()`/`renderWait()` methods is passed to a method `decorate(content)` if such a method exists. It allows to easily add some outer components decorating the content. The decoration is added regardless of the waiting state of the component.
+
+Example of usage:
+```jsx
+class MyComponent extends Cdur.Component
+{
+    ...
+    decorate(content)
+    {
+        return <div style={{"border": "1px solid black"}}>{content}</div>
+    }
+}
+```
+
+### Component ID
+
+Each created component, regardless if it is a root component or a subcomponent, will get its unique numeric id. This unique id may be accessed using
+```
+component.getId()
+```
+
+### Type hinting functions
+
+_C.dur._ uses internally some functions, which are used to get a proper type hint of a variable. These functions are also available outside of _C.dur._. In the current version, there are two such functions:
+
+* `Cdur.isPromise(value)` tests if `value` is a promise. _C.dur._ uses this function internally to recognize if a value is a promise (i.e. needs asynchronous handling) or it is not (synchronous access is possible)
+* `Cdur.isCallable(value)` tests if `value` is a callable function, but not a class, which is in fact a function in JavaScript as well. This function is used in `setState()`/`setContext()` methods.
+
 ## To be documented
 
 * state vs context
-* `isWaitingState()`
-* `getId()`
-* `decorate()`
 * `setState()`/`setContext()` in detail
-* `Cdur.isPromise()`/`Cdur.isCallable()`
-* `Cdur.Mount`
