@@ -70,6 +70,11 @@ export default function createReactComponent(component)
         {
             return component.getId()
         }
+
+        static instance()
+        {
+            return component
+        }
     }
 }
 
