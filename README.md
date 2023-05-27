@@ -1,6 +1,6 @@
 # ![C.dur.](cdur.svg)
 
-_C.dur._ is a JavaScript library providing durable components for React. _C.dur._ creates components similar to standard React stateful components (declared as classes), but _C.dur._ components are **durable**. The lifetime of a _C.dur._ component is independent on the React rendering process.
+_C.dur._ is a JavaScript library providing durable components for [React](https://react.dev/). _C.dur._ creates components similar to standard React stateful components (declared as classes), but _C.dur._ components are **durable**. The lifetime of a _C.dur._ component is independent on the React rendering process.
 
 Therefore _C.dur._ components are useful for handling asynchronous requests. _C.dur_ provides a simple way, how to deal with asynchronicity in React. _C.dur._ also tries to make work with asynchronous requests as easy as possible.
 
@@ -159,3 +159,99 @@ Cdur.waiting(this.state.data, null)
 ```
 
 The intention is just to replace the promise by some default value until the promise is resolved.
+
+## Subcomponents
+
+_C.dur._ components provides a way how to easily create subcomponents. A subcomponent is a regular _C.dur._ component, but having some another _C.dur._ component as a parent. All funcitons described above are also available for subcomponents. But subcomponents are bound together with their parent.
+
+Event _C.dur._ subcomponents are still durable. The lifecycle of a subcomponent is still independent on React rendering.
+
+### Creating a subcomponent
+
+To create a subcomponent, simply call in your component:
+
+```jsx
+subComponent = this.createSubComponent(SubComponentClass)
+```
+
+The method `createSubComponent()` returns a React component exactly like `createRootComponent()` does. Using `reactComponent.instance()` you may get the instance of the component itself exactly as it is possible for root components.
+
+### Removing a subcomponent
+
+To remove a subcomponent, simply call
+```jsx
+subComponent.disconnect()
+```
+
+### Keeping subcomponents in the state
+
+Subcomponents may be kept regularly in `this.state` like any other data. It is just necessary to store them into the state using `setState()`.
+
+### Accessing parent component
+
+To access parent component, just use the components's method `parent()`, for example:
+```jsx
+class ChildComponent extends Cdur.Component
+{
+    ...
+    changeParentState()
+    {
+        this.parent().changeState()
+    }
+}
+```
+
+### Example
+
+Here is a complete example using states how subcomponents may be used:
+```jsx
+class ChildComponent extends Cdur.Component
+{
+    render()
+    {
+        return <div>Child</div>
+    }
+}
+
+class ParentComponent extends Cdur.Component
+{
+    init()
+    {
+        this.setState("child", null)
+    }
+
+    toggleChild()
+    {
+        if (this.state.child !== null) {
+            this.state.child.disconnect()
+            this.setState("child", null)
+        } else {
+            const child = this.createSubComponent(ChildComponent)
+            this.setState("child", child)
+        }
+    }
+
+    render()
+    {
+        return <div>
+            {this.state.child !== null ? <this.state.child /> : "child not mounted"}
+            <div>
+                <button onClick={this.toggleChild.bind(this)}>Toggle child</button>
+            </div>
+        </div>
+    }
+}
+```
+
+## To be documented
+
+* `Component.destroy()`
+* Component creation arguments.
+* Waiting state in subcomponents
+* state vs context
+* `isWaitingState()`
+* `isAbleToWait()`
+* `getId()
+* `decorate()`
+* `setState()`/`setContext()` in detail
+* `Cdur.isPromise()`/`Cdur.isCallable()`
