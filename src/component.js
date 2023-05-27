@@ -8,9 +8,9 @@ const getComponentTrigger = (component, recursively) => {
         switch(type) {
             case 'changed':
                 if (recursively) {
-                    component.notifyReactChangedRecursively()
+                    notifyReactChangedRecursively(component)
                 } else {
-                    component.notifyReactChanged()
+                    notifyReactChanged(component)
                 }
                 break;
             case 'waitStart':
@@ -24,6 +24,16 @@ const getComponentTrigger = (component, recursively) => {
         }
     }
 }
+
+const notifyReactChanged = (component) => component._notifier.notify(component)
+
+const notifyReactChangedRecursively = (component) => {
+        for (var id in this._children) {
+            notifyReactChangedRecursively(this._children[id])
+        }
+        notifyReactChanged(this)
+    }
+
 
 var componentId = 1
 
@@ -52,15 +62,15 @@ export default class Component
         }
     }
 
-    canWait() {
+    canWait = () => {
         return "renderWait" in this;
     }
 
-    isWaitingState() {
+    isWaitingState = () => {
         return this._internal.waiting > 0
     }
 
-    waitStart() {
+    waitStart = () => {
         if (this._internal.waiting == 0 && !this.canWait()) {
             const parent = this.parent()
             if (parent) {
@@ -68,20 +78,20 @@ export default class Component
             }
         }
         this._internal.waiting++
-        this.notifyReactChanged()
+        notifyReactChanged(this)
     }
 
-    waitFor(promise) {
+    waitFor = (promise) => {
         if (isPromise(promise)) {
             this.waitStart()
             promise.finally(this.waitFinish.bind(this))
         }
     }
 
-    waitFinish() {
+    waitFinish = () => {
         if (this._internal.waiting > 0) {
             this._internal.waiting--
-            this.notifyReactChanged()
+            notifyReactChanged(this)
         } else {
             throw "called waitFinish without waitStart"
         }
@@ -93,34 +103,15 @@ export default class Component
         }
     }
 
-    notifyReactChangedRecursively() {
-        for (var id in this._children) {
-            this._children[id].notifyReactChangedRecursively()
-        }
-        this.notifyReactChanged()
-    }
+    setState = (...args) => setState(this.state, getComponentTrigger(this, false), ...args)
 
-    notifyReactChanged() {
-        this._notifier.notify(this)
-    }
+    setContext = (...args) => setState(this.context, getComponentTrigger(this, false), ...args)
 
-    setState(...args) {
-        setState(this.state, getComponentTrigger(this, false), ...args)
-    }
+    createSubComponent = (subcomponentClass, ...args) => (new subcomponentClass(this, args)).view()
 
-    setContext(...args) {
-        setState(this.context, getComponentTrigger(this, false), ...args)
-    }
+    parent = () => this._parent
 
-    createSubComponent(subcomponentClass, ...args) {
-        return (new subcomponentClass(this, args)).view()
-    }
-
-    parent() {
-        return this._parent
-    }
-
-    disconnect() {
+    disconnect = () => {
         this._disconnected = true
         delete this._parent._children[this.id]
         if (this._parent !== null && this.isWaitingState() && !this.canWait()) {
@@ -128,16 +119,12 @@ export default class Component
         }
         this.context = {}
         this._parent = null
-        this.notifyReactChanged()
+        notifyReactChanged(this)
     }
 
-    getId() {
-        return this.id
-    }
+    getId = () => this.id
 
-    static createRootComponent(...args) {
+    static createRootComponent (...args) {
         return createReactComponent(new this(null, args))
     }
 }
-
-
