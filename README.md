@@ -110,6 +110,8 @@ class MyWaitingComponent {
 }
 ```
 
+If the component is in a waiting state and your component does not implement `renderWait()`, **nothwing will be rendered.** But it is allowed to implement the `renderWait()` function by calling the regular `render()` function. But in such a case the component is responsible for properly evaluating the incomplete data caused the wait state.
+
 Then you may easily trigger the waiting state of the component. You can do it either manually by calling the methods `waitStart()` (when the waiting state should be entered) and `waitFinish()` (when the waiting state should be leaved) or you can also use an internal promise driving mechanism.
 
 ### Triggering wait state manually
@@ -243,15 +245,70 @@ class ParentComponent extends Cdur.Component
 }
 ```
 
+### Waiting in subcomponents
+
+When using the waiting state in subcomponents, there is one more option you can use: Any subcomponent may anounce if it is able to handle the waiting state or not. If a subcomponent is not able to handle the waiting state, the waiting state will be just propagated to the parent.
+
+By default the component recognizes automatically if it is able to handle the wait state depending on the existence of the `renderWait()` method. I.e. if the component has not implemented the `renderWait()` method, the component is considered as not being able to handle waiting and the waiting will be propagated to the parent component. If `renderWait()` is implemented, the component is considered as being able to handle waiting nad waiting will NOT be propagated to the parent.
+
+But this default behavior may be changed by just overriding the method `isAbleToWait()`. If the overriden method returns `true`, the component is considered as being able to handle the wait state and it is considered as NOT being able to handle the wait state otherwise. **The result of this function does not affect the rendering of the component, it just controls the propagation of the waiting state to the parent.**
+
+
+## Lifecycle of a component
+
+The life cycle of any component is controlled explicitely. Components may be created or destroyed.
+
+### Compoent creation detailed
+
+Components are created by calling either the component's static method `createRootComponent()` or by calling the component's method `createSubComponent()`.
+```jsx
+    rootComponent = MyComponent.createRootComponent(args, may, be, passed)
+    this.createSubComponent(MyComponent, args, may, be, passed)
+```
+Both methods create a new component and the difference is just that root component does not have any parent while subcomponent has parent to be set to hte component calling `createSubComponent()`.
+
+Arguments may be passed to the creation process. Any argument is passed to the `init()` method. For example:
+```jsx
+class GreetingComponent extends Cdur.Component
+{
+    init(name)
+    {
+        this.setState("name", name)
+    }
+
+    render()
+    {
+        return <div>Hello, {this.state.name}</div>
+    }
+}
+
+component = GreetingComponent.createRootComponent("John")
+```
+
+### Component destruction
+
+If some component is no longer necessary, it should be explicitely destroyed. You can do it by calling
+```jsx
+component.disconnect()
+```
+
+If a component needs to proceed some specific destruction procedure (unregister event listeners, timers, etc.) it may implement the `destroy()` method:
+```jsx
+class MyComponent extends Cdur.Component
+{
+    ...
+    destroy()
+    {
+        // do some destruction steps
+    }
+}
+```
+
 ## To be documented
 
-* `Component.destroy()`
-* Component creation arguments.
-* Waiting state in subcomponents
 * state vs context
 * `isWaitingState()`
-* `isAbleToWait()`
-* `getId()
+* `getId()`
 * `decorate()`
 * `setState()`/`setContext()` in detail
 * `Cdur.isPromise()`/`Cdur.isCallable()`
