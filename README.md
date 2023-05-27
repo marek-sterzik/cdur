@@ -51,7 +51,7 @@ But if necessary, you may easily switch between the instance of your _C.dur._ co
 ```jsx
 rawComponentInstance = MyComponentInstance.instance()
 reactComponent = rawComponentInstance.view()
-// reactComponent and MyComponentInstnace are now the same object
+// reactComponent and MyComponentInstnace are now referencing to the same object
 ```
 
 Note that the corresponding React component may be really used as a **view** meaning you may render one _C.dur._ component multiple times at the same time.
