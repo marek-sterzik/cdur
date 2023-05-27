@@ -363,7 +363,7 @@ Components are created by calling either the component's static method `createRo
     rootComponent = MyComponent.createRootComponent(args, may, be, passed)
     this.createSubComponent(MyComponent, args, may, be, passed)
 ```
-Both methods create a new component and the difference is just that root component does not have any parent while subcomponent has parent to be set to hte component calling `createSubComponent()`.
+Both methods create a new component and the difference is just that root component does not have any parent while subcomponent has parent to be set to the component calling `createSubComponent()`.
 
 Arguments may be passed to the creation process. Any argument is passed to the `init()` method. For example:
 ```jsx
