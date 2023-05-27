@@ -1,4 +1,4 @@
-import createReactComponent from "./react_bridge.js"
+import {createReactComponent} from "./react_bridge.js"
 import Notifier from "./notifier.js"
 import setState from "./state_setter.js"
 import {isPromise} from "./util.js"

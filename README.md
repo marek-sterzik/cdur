@@ -312,3 +312,4 @@ class MyComponent extends Cdur.Component
 * `decorate()`
 * `setState()`/`setContext()` in detail
 * `Cdur.isPromise()`/`Cdur.isCallable()`
+* `Cdur.Mount`

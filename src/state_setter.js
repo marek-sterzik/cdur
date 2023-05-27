@@ -97,12 +97,15 @@ const setStateSingle = (variable, trigger, keys, value, resolveFunction) => {
     const lastKey = keys.pop()
     var obj = variable
     var oldKey = null
+    var changed = false
     for (var k of keys) {
         if (oldKey !== null) {
             if (typeof k === "string") {
                 obj[oldKey] = {}
+                changed = true
             } else if ((typeof k === "int") || (k === S_PUSH)) {
                 obj[oldKey] = []
+                changed = true
             }
             obj = obj[oldKey]
             oldKey = null
@@ -117,7 +120,7 @@ const setStateSingle = (variable, trigger, keys, value, resolveFunction) => {
             oldKey = obj.length
         }
     }
-    return resolveWrite(trigger, obj, lastKey, value, resolveFunction)
+    return resolveWrite(trigger, obj, lastKey, value, resolveFunction) || changed
 }
 
 const setState = (variable, trigger, ...args) => {

@@ -1,6 +1,6 @@
 import React from "react"
 
-export default (component) => class extends React.Component {
+const createReactComponent = (component) => class extends React.Component {
     constructor() {
         super()
         this.component = component
@@ -65,3 +65,64 @@ export default (component) => class extends React.Component {
     }
 }
 
+class Mount extends React.Component
+{
+    constructor() {
+        super()
+        this.componentClass = null
+        this.wantComponent = false
+        this.state = {"component": null}
+    }
+
+    getComponentArgs = () => {
+        if ("args" in this.props) {
+            return this.props.args
+        }
+        return []
+    }
+
+    updateState = () => {
+        if (this.wantComponent) {
+            var component = this.state.component
+            if (component !== null && this.componentClass !== this.props.component) {
+                component.disconnect()
+                component = null
+            }
+            this.componentClass = this.props.component
+            if (component === null) {
+                const args = this.getComponentArgs()
+                component = this.componentClass.createRootComponent(...args)
+                this.setState({"component": component})
+            }
+        } else {
+            if (this.state.component !== null) {
+                const component = this.state.component
+                this.setState({"component": null})
+                component.disconnect()
+            }
+        }
+    }
+
+    componentDidUpdate = () => {
+        this.updateState()
+    }
+
+    componentDidMount = () => {
+        this.wantComponent = true
+        this.updateState()
+    }
+
+    componentWillUnmount = () => {
+        this.wantComponent = false
+        this.updateState()
+    }
+
+    render = () => {
+        if (this.state.component === null) {
+            return null
+        }
+        return React.createElement(this.state.component, {})
+    }
+}
+
+export {createReactComponent, Mount}
