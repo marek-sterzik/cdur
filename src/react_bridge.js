@@ -114,7 +114,6 @@ class Mount extends React.Component
     }
 
     instantiateComponent = (args) => {
-        console.log(this.componentDescriptor)
         if (this.componentDescriptor instanceof Component) {
             this.durable = true
             return this.componentDescriptor.view()
