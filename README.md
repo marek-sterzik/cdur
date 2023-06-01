@@ -466,8 +466,8 @@ It is also able to regularly mount already existing durable components using `Cd
 ```jsx
 var MyComponentInstance = MyComponent.createRootInstance()
 
-<Cdur.Mount component={MyComponentInstance} /> //equivalent to <MyComponentInstance />
-<Cdur.Mount component={MyComponentInstance.instance()} /> //still equivalent to <MyComponentInstance />
+var reactComponent = <Cdur.Mount component={MyComponentInstance} /> //equivalent to <MyComponentInstance />
+var reactComponent = <Cdur.Mount component={MyComponentInstance.instance()} /> //still equivalent to <MyComponentInstance />
 ```
 
 ## Misc functions
