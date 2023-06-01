@@ -1,6 +1,11 @@
 import React from "react"
+import Component from "./component.js"
 
-const createReactComponent = (component) => class extends React.Component {
+class ComponentView extends React.Component
+{
+}
+
+const createReactComponent = (component) => class extends ComponentView {
     constructor() {
         super()
         this.component = component
@@ -69,8 +74,9 @@ class Mount extends React.Component
 {
     constructor() {
         super()
-        this.componentClass = null
+        this.componentDescriptor = null
         this.wantComponent = false
+        this.durable = false
         this.state = {"component": null}
     }
 
@@ -84,22 +90,40 @@ class Mount extends React.Component
     updateState = () => {
         if (this.wantComponent) {
             var component = this.state.component
-            if (component !== null && this.componentClass !== this.props.component) {
-                component.disconnect()
+            if (component !== null && this.componentDescriptor !== this.props.component) {
+                if (!this.durable) {
+                    component.disconnect()
+                }
                 component = null
             }
-            this.componentClass = this.props.component
+            this.componentDescriptor = this.props.component
             if (component === null) {
                 const args = this.getComponentArgs()
-                component = this.componentClass.createRootComponent(...args)
+                component = this.instantiateComponent(args)
                 this.setState({"component": component})
             }
         } else {
             if (this.state.component !== null) {
                 const component = this.state.component
                 this.setState({"component": null})
-                component.disconnect()
+                if (!this.durable) {
+                    component.disconnect()
+                }
             }
+        }
+    }
+
+    instantiateComponent = (args) => {
+        console.log(this.componentDescriptor)
+        if (this.componentDescriptor instanceof Component) {
+            this.durable = true
+            return this.componentDescriptor.view()
+        } else if (this.componentDescriptor.prototype instanceof ComponentView) {
+            this.durable = true
+            return this.componentDescriptor
+        } else {
+            this.durable = false
+            return this.componentDescriptor.createRootComponent(...args)
         }
     }
 
