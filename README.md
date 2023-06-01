@@ -7,6 +7,7 @@ Therefore _C.dur._ components are useful for handling asynchronous requests. _C.
 **This is the very initial stage of the library. API of the library should be considered as unstable until version 1.0.0 of the library is released.**
 
 ## Installation
+
 ```bash
 $ npm install cdur
 ```
@@ -41,6 +42,7 @@ const MyComponentInstance = MyComponent.createRootComponent()
 ```
 
 This will create a new instance of `MyComponent`. In fact, `MyComponentInstance` is not directly the instance of `MyComponent`, but it is closely related. `MyComponentInstance` is a React component instead, which you may directly use in your jsx code. For example:
+
 ```jsx
 ReactDOM.createRoot(document.getElementById('root')).render(<MyComponentInstance />);
 
@@ -137,11 +139,13 @@ class MyStatefulComponent
 ### Triggering wait state by a promise
 
 If your asynchronous opreation is represented by a promise, you may easily trigger the wait state of a component by calling the method:
+
 ```jsx
 this.waitFor(promise)
 ```
 
 Or you may also write the promise directly to the state using `setState()`:
+
 ```jsx
 this.setState({"data": promise})
 ```
@@ -157,6 +161,7 @@ The behavior of writing promises to the state is described in detail later.
 ### Getting the waiting state
 
 To get the current waiting state of the compoennt, you may call:
+
 ```jsx
 this.isWaitingState()
 ```
@@ -180,6 +185,7 @@ The method `createSubComponent()` returns a React component exactly like `create
 ### Removing a subcomponent
 
 To remove a subcomponent, simply call
+
 ```jsx
 subComponent.disconnect()
 ```
@@ -191,6 +197,7 @@ Subcomponents may be kept regularly in `this.state` like any other data. It is j
 ### Accessing parent component
 
 To access parent component, just use the components's method `parent()`, for example:
+
 ```jsx
 class ChildComponent extends Cdur.Component
 {
@@ -203,6 +210,7 @@ class ChildComponent extends Cdur.Component
 ```
 
 To access the root component (top level parent), use the component's method `root()`:
+
 ```jsx
 class ChildComponent extends Cdur.Component
 {
@@ -218,6 +226,7 @@ class ChildComponent extends Cdur.Component
 ### Example
 
 Here is a complete example using states how subcomponents may be used:
+
 ```jsx
 class ChildComponent extends Cdur.Component
 {
@@ -314,11 +323,13 @@ this.setState(["a.b", "c"], 12)
 ```
 
 There is also a special property name `@` for the string variant of the property identification meaning "_push the value in the array_." Using `@` for non-arrays will lead to undefined behavior. For example. Lets `this.state.names` contains an array of names and we want to push a new item into that array. It may be done using
+
 ```jsx
 this.setState("names.@", "John Doe")
 ```
 
 If you want to write the example above in the _array_ identification syntax, you will need a special constant `Cdur.consts.S_PUSH` into that array:
+
 ```
 this.setState(["names", Cdur.consts.S_PUSH], "John Doe")
 ```
@@ -333,6 +344,7 @@ If the value being passed to `setState()`/`setContext()` is a _promise_ then _C.
 To trigger the asynchronous write, a promise (object with `thenable` interface) must be passed as the value for `setState()`/`setContext()`. `setState()`/`setContext()` **does not do** any deep inspection of the value and in case the promise is for example just one property of the value (i.e. passing `{data: promise}` as the value for example), the data are written synchronously.
 
 If you want to fine-tune the behavior of the promise according to the values written during the promise life time, you need to turn any promise or value into a _smart_ promise by calling:
+
 ```jsx
 smartPromise = Cdur.promise(dumbPromise)
 ```
@@ -370,6 +382,7 @@ smartPromise.writeOnWait(function() {...}, false)
 ```
 
 For example, if we want to make an async state write writing null even when the value is not ready or when the promise fails, one may write this code:
+
 ```jsx
 this.setState(
     "data",
@@ -384,13 +397,16 @@ The life cycle of any component is controlled explicitely. Components may be cre
 ### Compoent creation detailed
 
 Components are created by calling either the component's static method `createRootComponent()` or by calling the component's method `createSubComponent()`.
+
 ```jsx
     rootComponent = MyComponent.createRootComponent(args, may, be, passed)
     this.createSubComponent(MyComponent, args, may, be, passed)
 ```
+
 Both methods create a new component and the difference is just that root component does not have any parent while subcomponent has parent to be set to the component calling `createSubComponent()`.
 
 Arguments may be passed to the creation process. Any argument is passed to the `init()` method. For example:
+
 ```jsx
 class GreetingComponent extends Cdur.Component
 {
@@ -411,11 +427,13 @@ component = GreetingComponent.createRootComponent("John")
 ### Component destruction
 
 If some component is no longer necessary, it should be explicitely destroyed. You can do it by calling
+
 ```jsx
 component.disconnect()
 ```
 
 If a component needs to proceed some specific destruction procedure (unregister event listeners, timers, etc.) it may implement the `destroy()` method:
+
 ```jsx
 class MyComponent extends Cdur.Component
 {
@@ -432,12 +450,24 @@ class MyComponent extends Cdur.Component
 Sometimes it could be useful to mount _C.dur._ components directly into react using the standard React visual model to drive the life cycle of the component. It does not make any sense to use a _C.dur._ component in such a mode as a single standalone component (use a React stateful component instead), but it makes sense if used together with subcomponents. In such a case root component is not really durable with respect to the React lifecycle, but children of the root component may still be durable with respect to the root component. I.e. children are durable even in a case, root component decides not to render the children.
 
 To mount a _C.dur._ component in this "non-durable" mode, you may use the `Cdur.Mount` React component:
+
 ```jsx
 <Cdur.Mount component={MyComponent} />
 ```
+
 If you want to pass some component arguments, use:
+
 ```jsx
 <Cdur.Mount component={MyComponent} args={["a", "b", "c"]} />
+```
+
+It is also able to regularly mount already existing durable components using `Cdur.Mount`. In such a case `Cdur.Mount` does not control the lifespan of the component. I.e. they are regularly mounted as durable:
+
+```jsx
+var MyComponentInstance = MyComponent.createRootInstance()
+
+<Cdur.Mount component={MyComponentInstance} /> //equivalent to <MyComponentInstance />
+<Cdur.Mount component={MyComponentInstance.instance()} /> //still equivalent to <MyComponentInstance />
 ```
 
 ## Misc functions
@@ -447,6 +477,7 @@ If you want to pass some component arguments, use:
 Any _C.dur._ component may be decorated by some React component. The result of the `render()`/`renderWait()` methods is passed to a method `decorate(content)` if such a method exists. It allows to easily add some outer components decorating the content. The decoration is added regardless of the waiting state of the component.
 
 Example of usage:
+
 ```jsx
 class MyComponent extends Cdur.Component
 {
