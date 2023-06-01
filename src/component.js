@@ -80,6 +80,16 @@ export default class Component
 
     parent = () => this._parent
 
+    root = () => {
+        var last = this
+        var current = this
+        do {
+            last = current
+            current = current.parent()
+        } while (current !== null)
+        return last
+    }
+
     disconnect = () => {
         this._disconnected = true
         if (this._parent !== null) {

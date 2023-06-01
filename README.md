@@ -202,6 +202,19 @@ class ChildComponent extends Cdur.Component
 }
 ```
 
+To access the root component (top level parent), use the component's method `root()`:
+```jsx
+class ChildComponent extends Cdur.Component
+{
+    ...
+    changeRootComponentState()
+    {
+        this.root().changeState()
+    }
+}
+```
+
+
 ### Example
 
 Here is a complete example using states how subcomponents may be used:
