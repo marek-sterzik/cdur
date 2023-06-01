@@ -4,7 +4,7 @@ _C.dur._ is a JavaScript library providing durable components for [React](https:
 
 Therefore _C.dur._ components are useful for handling asynchronous requests. _C.dur_ provides a simple way, how to deal with asynchronicity in React. _C.dur._ also tries to make work with asynchronous requests as easy as possible.
 
-**This is the very initial stage of the library. More documentation needs to be added.**
+**This is the very initial stage of the library. API of the library should be considered as unstable until version 1.0.0 of the library is released.**
 
 ## Installation
 ```bash
