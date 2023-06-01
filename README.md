@@ -338,10 +338,22 @@ smartPromise.writeNullOnError()
 smartPromise.writeErrorOnError()
 
 // write anything when waiting for the result:
+smartPromise.writeOnWait("Any value")
+
+// write anything when waiting for the result depending on the promise:
 smartPromise.writeOnWait((promise) => anyFunction(promise))
 
+// write a function when waiting for the result (don't resolve the function):
+smartPromise.writeOnWait(function() {...}, false)
+
 // write anything when the promise is rejected:
+smartPromise.writeOnError("ERROR")
+
+// write anything when the promise is rejected depending on the error thrown:
 smartPromise.writeOnError((error) => anyFunction(error))
+
+// write a function when the promise is rejected (don't resolve the function):
+smartPromise.writeOnWait(function() {...}, false)
 ```
 
 For example, if we want to make an async state write writing null even when the value is not ready or when the promise fails, one may write this code:

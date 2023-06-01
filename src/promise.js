@@ -1,4 +1,4 @@
-import {isPromise} from "./util.js"
+import {isPromise, alwaysCallable} from "./util.js"
 
 class TunablePromise
 {
@@ -17,17 +17,17 @@ class TunablePromise
         this.onError = onError
     }
 
-    writeOnWait = (onWait) => {
-        return new TunablePromise(this.value, onWait, this.onError)
+    writeOnWait = (onWait, resolveFunction) => {
+        return new TunablePromise(this.value, alwaysCallable(onWait, resolveFunction), this.onError)
     }
 
-    writeOnError = (onError) => {
-        return new TunablePromise(this.value, this.onWait, onError)
+    writeOnError = (onError, resolveFunction) => {
+        return new TunablePromise(this.value, alwaysCallable(this.onWait, resolveFunction), onError)
     }
 
-    writeNullOnWait = () => this.writeOnWait((promise) => null)
+    writeNullOnWait = () => this.writeOnWait(null)
     writePromiseOnWait = () => this.writeOnWait((promise) => promise)
-    writeNullOnError = () => this.writeOnError((error) => null)
+    writeNullOnError = () => this.writeOnError(null)
     writeErrorOnError = () => this.writeOnError((error) => error)
 
     writeValue = (writer, waitStart, waitFinish) => {
