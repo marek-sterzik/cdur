@@ -274,6 +274,36 @@ By default the component recognizes automatically if it is able to handle the wa
 
 But this default behavior may be changed by just overriding the method `isAbleToWait()`. If the overriden method returns `true`, the component is considered as being able to handle the wait state and it is considered as NOT being able to handle the wait state otherwise. **The result of this function does not affect the rendering of the component, it just controls the propagation of the waiting state to the parent.**
 
+## Named subcomponents
+
+There is also a posibility to create named subcomponents. A named subcomponent is just a regular subcomponent with an associated string name. There is one important rule for named subcomponents:
+
+**There may be always only one single subcomponent with the same name.**
+
+In case you will try to create a second subcomponent with the same name, the previous subcomponent will be automatically disconnected and destroyed.
+
+To create a named subcomponent, just call:
+
+```jsx
+subComponent = this.createNamedSubComponent(name, SubComponentClass)
+```
+
+The behavior of `createNamedSubComponent()` is very similar to `createSubComponent()`. The named version just expect the first argument to be the name of the named subcomponent. Both methods return the same value.
+
+You may also get the named subcomponent by name:
+
+```jsx
+subComponent = this.getNamedSubComponent(name)
+```
+
+which will return the named subcomponent if it exists and `null` otherwise.
+
+Named subcomponents may be also disconnected using the method:
+
+```jsx
+this.disconnectNamedSubcomponent(name)
+```
+
 ## State and Context
 
 _C.dur._ components may use two different types of its internal state:
@@ -432,7 +462,17 @@ If some component is no longer necessary, it should be explicitely destroyed. Yo
 component.disconnect()
 ```
 
-If a component needs to proceed some specific destruction procedure (unregister event listeners, timers, etc.) it may implement the `destroy()` method:
+If a component needs to proceed some specific destruction procedure (unregister event listeners, timers, etc.) you may use the `destroy()` event listener (see below).
+
+## Events
+
+There are multiple events any _C.dur._ component may listen to. The events are just methods of the given name which are automatically invoked in case some event happened. These events are available:
+
+* `destroy()` - this method is invoked when the component was destroyed
+* `childAdded(child, name)` - this method is invoked when a new subcomponent was added. `name` is set for named subcomponents and is just `null` for regular unnamed subcomponents.
+* `childRemoved(child, name)` - this method is invoked when a subcomponent was removed. The parameters are the same as in `childAdded()`
+
+For example:
 
 ```jsx
 class MyComponent extends Cdur.Component
@@ -442,26 +482,42 @@ class MyComponent extends Cdur.Component
     {
         // do some destruction steps
     }
+    
+    childAdded(child, name)
+    {
+        // do some steps when a child is added
+    }
+    
+    childRemoved(child, name)
+    {
+        // do some steps when a child is removed
+    }
 }
 ```
 
 ## Mounting _C.dur._ components directly to React
 
-Sometimes it could be useful to mount _C.dur._ components directly into react using the standard React visual model to drive the life cycle of the component. It does not make any sense to use a _C.dur._ component in such a mode as a single standalone component (use a React stateful component instead), but it makes sense if used together with subcomponents. In such a case root component is not really durable with respect to the React lifecycle, but children of the root component may still be durable with respect to the root component. I.e. children are durable even in a case, root component decides not to render the children.
+### Non-durable mounts
 
-To mount a _C.dur._ component in this "non-durable" mode, you may use the `Cdur.Mount` React component:
+Sometimes it could be useful to mount _C.dur._ components directly into react using the standard React visual model to drive the life cycle of the component. It does not make any sense to use a _C.dur._ component in such a mode as a single standalone component (use a React stateful component instead), but it makes sense if used together with subcomponents. _C.dur._ contains options how to bind regular react code together with _C.dur._ components.
+
+For all these purposes, there is a _smart_ react component `Cdur.Mount`, which may be invoked in multiple modes:
+
+To mount a _C.dur._ component in a "non-durable" mode, you may use:
 
 ```jsx
 <Cdur.Mount component={MyComponent} />
 ```
 
-If you want to pass some component arguments, use:
+In that case the _C.dur._ component `MyComponent` will be automatically created as a root component. And it will be automatically destroyed when the component will be unmounted by react. If you want to pass some component creation arguments, use:
 
 ```jsx
-<Cdur.Mount component={MyComponent} args={["a", "b", "c"]} />
+<Cdur.Mount component={MyComponent} creationArgs={["a", "b", "c"]} />
 ```
 
-It is also able to regularly mount already existing durable components using `Cdur.Mount`. In such a case `Cdur.Mount` does not control the lifespan of the component. I.e. they are regularly mounted as durable:
+The property `creationArgs` is used only when creating the _C.dur._ component and is not used component for updates.
+
+`Cdur.Mount` is also able to mount component instances (in such a case it does not accept `crationArgs`) or compoennt views:
 
 ```jsx
 var MyComponentInstance = MyComponent.createRootInstance()
@@ -473,7 +529,51 @@ var reactComponent = <Cdur.Mount component={MyComponentInstance.instance()} />
 // still equivalent to <MyComponentInstance />
 ```
 
+### Durable mounts
+
+If you want durable mounts, you may use the property `parentSlot` accepting a string constant. For example:
+
+```jsx
+var reactComponent = <Cdur.Mount component={MyComponent} parentSlot="page">
+```
+
+In that case the component is created not as a root component, but as a subcomponent of the nearest parent _C.dur._ component. In case there is no parent _C.dur._ component, it will also create a non-durable root component.
+
+The `parentSlot` functionality uses internally the named subcomponents subsystem. It means that it remembers a component as long as it will be overriden by some another component.
+
+**In that case it is guaranteed that the component will not be disconnected immediately after react unmount.** The component will be disconnected only when the parent component is disconnected or when the same slot is replaced by some another component.
+
+### The root component
+
+_C.dur._ also provides a very simple component `Cdur.Root` which may be used just for the reason to easily add a root _C.dur._ component where it is missing. For example:
+
+```jsx
+function App() {
+  return (
+    <Cdur.Mount component={Cdur.Root}><ReactApp /></Cdur.Mount>
+  );
+}
+```
+
+In that case, anywhere inside of `<ReactApp />` the `parentSlot` functionality may be used and the created subcomponent will be attached as a child to the `Cdur.Root` component (if there will be no other subcomponent there).
+
 ## Misc functions
+
+### Support for React children
+
+Since each _C.dur._ component is still a regular React component, sometimes it may be useful to use the React children inside of the _C.dur._ component. For that purpose, there is a method `children()` available. You may use for example:
+
+```jsx
+class MyComponent extends Cdur.Component
+{
+    ...
+    render()
+    {
+        return <div>{this.children()}</div>
+    }
+}
+```
+
 
 ### Component decoration
 
