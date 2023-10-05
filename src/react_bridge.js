@@ -1,6 +1,8 @@
 import React from "react"
 import Component from "./component.js"
 
+const CdurContext = React.createContext(null);
+
 class ComponentView extends React.Component
 {
 }
@@ -36,24 +38,31 @@ const createReactComponent = (component) => class extends ComponentView {
         if ("decorate" in this.component) {
             content = this.component.decorate(content)
         }
-        return content
+
+        return React.createElement(CdurContext.Provider, {"value": this.component}, content)
     }
 
     renderContent = () => {
-        if (this.component._disconnected) {
-            return React.createElement(React.Fragment, {}, "Error: This component was disconnected")
-        } else if (this.component.isWaitingState()) {
-            if ("renderWait" in this.component) {
-                return this.component.renderWait()
+        const tmp = this.component._reactChildrenState
+        this.component._reactChildrenState = {"available": true, "children": this.props.children}
+        try {
+            if (this.component._disconnected) {
+                return React.createElement(React.Fragment, {}, "Error: This component was disconnected")
+            } else if (this.component.isWaitingState()) {
+                if ("renderWait" in this.component) {
+                    return this.component.renderWait()
+                } else {
+                    return null
+                }
             } else {
-                return null
+                if ("render" in this.component) {
+                    return this.component.render()
+                } else {
+                    throw "Render function not implemented"
+                }
             }
-        } else {
-            if ("render" in this.component) {
-                return this.component.render()
-            } else {
-                throw "Render function not implemented"
-            }
+        } finally {
+            this.component._reactChildrenState = tmp
         }
     }
 
@@ -70,8 +79,11 @@ const createReactComponent = (component) => class extends ComponentView {
     }
 }
 
+
 class Mount extends React.Component
 {
+    static contextType = CdurContext
+
     constructor() {
         super()
         this.componentDescriptor = null
@@ -80,12 +92,11 @@ class Mount extends React.Component
         this.state = {"component": null}
     }
 
-    getComponentArgs = () => {
-        if ("args" in this.props) {
-            return this.props.args
-        }
-        return []
-    }
+    getComponentArgs = () =>
+        ("creationArgs" in this.props) ? this.props.creationArgs : (("args" in this.props) ? this.props : null)
+
+    getComponentParentSlot = () =>  
+        ("parentSlot" in this.props) ? this.props.parentSlot : null
 
     updateState = () => {
         if (this.wantComponent) {
@@ -98,8 +109,7 @@ class Mount extends React.Component
             }
             this.componentDescriptor = this.props.component
             if (component === null) {
-                const args = this.getComponentArgs()
-                component = this.instantiateComponent(args)
+                component = this.instantiateComponent()
                 this.setState({"component": component})
             }
         } else {
@@ -113,17 +123,40 @@ class Mount extends React.Component
         }
     }
 
-    instantiateComponent = (args) => {
+    instantiateComponent = () => {
+        const parentSlot = this.getComponentParentSlot()
+        const creationArgs = this.getComponentArgs()
+        const context = this.context
+        var componentInstance
+        var argsAllowed = false
         if (this.componentDescriptor instanceof Component) {
             this.durable = true
-            return this.componentDescriptor.view()
+            componentInstance = this.componentDescriptor.view()
         } else if (this.componentDescriptor.prototype instanceof ComponentView) {
             this.durable = true
-            return this.componentDescriptor
+            componentInstance = this.componentDescriptor
         } else {
-            this.durable = false
-            return this.componentDescriptor.createRootComponent(...args)
+            argsAllowed = true
+            const args = (creationArgs !== null) ? creationArgs : []
+            if (parentSlot === null || context === null) {
+                this.durable = false
+                componentInstance = this.componentDescriptor.createRootComponent(...args)
+            } else {
+                this.durable = true
+                componentInstance = context.getNamedSubComponent(parentSlot)
+                if (componentInstance === null || !(componentInstance.instance() instanceof this.componentDescriptor)) {
+                    componentInstance = context.createNamedSubComponent(
+                        parentSlot,
+                        this.componentDescriptor,
+                        ...args
+                    )
+                }
+            }
         }
+        if (!argsAllowed && (creationArgs !== null || parentSlot !== null)) {
+            throw "creationArguments and/or parentSlot not allowed with this type of C.dur. component"
+        }
+        return componentInstance
     }
 
     componentDidUpdate = () => {
@@ -144,7 +177,7 @@ class Mount extends React.Component
         if (this.state.component === null) {
             return null
         }
-        return React.createElement(this.state.component, {})
+        return React.createElement(this.state.component, {}, this.props.children)
     }
 }
 

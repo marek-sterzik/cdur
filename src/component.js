@@ -20,11 +20,14 @@ export default class Component
             this.context = {}
             this._notifier = new Notifier()
         }
+        this._name = null
+        this._namedChildren = {}
         this.state = {}
         this._internal = {"waiting": 0}
         this._parent = parent
         this._parentWaiting = false
         this._mountedReactComponents = []
+        this._reactChildrenState = {"children": null, "available": false}
         const view = createReactComponent(this)
         this.view = () => view
         this._children = {}
@@ -72,11 +75,58 @@ export default class Component
         }
     }
 
+    children = () => {
+        if (this._reactChildrenState.available) {
+            return this._reactChildrenState.children
+        }
+        throw "React children not available outside of render function"
+    }
+
     setState = (...args) => setState(this.state, getComponentTrigger(this, false), ...args)
 
     setContext = (...args) => setState(this.context, getComponentTrigger(this, false), ...args)
 
-    createSubComponent = (subcomponentClass, ...args) => (new subcomponentClass(this, args)).view()
+    createSubComponent = (subComponentClass, ...args) => {
+        const component = this._createSubComponent(subComponentClass, ...args)
+        this._notify("childAdded", component.instance(), null)
+        return component
+    }
+    _createSubComponent = (subComponentClass, ...args) => (new subComponentClass(this, args)).view()
+
+    createNamedSubComponent = (name, subComponentClass, ...args) => {
+        this.disconnectNamedSubComponent(name)
+        const component = this._createSubComponent(subComponentClass, ...args)
+        const componentInstance = component.instance()
+        componentInstance._name = name
+        if (name !== null) {
+            this._namedChildren[name] = componentInstance.id
+        }
+        this._notify("childAdded", componentInstance, name)
+        return component
+
+    }
+
+    getNamedSubComponent = (name) => {
+        const component = this._getNamedSubComponent(name)
+        return (component !== null) ? component.view() : null
+    }
+
+    _getNamedSubComponent = (name) => {
+        if (name !== null && name in this._namedChildren) {
+            const id = this._namedChildren[name]
+            if (id in this._children) {
+                return this._children[id]
+            }
+        }
+        return null
+    }
+
+    disconnectNamedSubComponent = (name) => {
+        const component = this._getNamedSubComponent(name)
+        if (component !== null) {
+            component.disconnect()
+        }
+    }
 
     parent = () => this._parent
 
@@ -94,21 +144,28 @@ export default class Component
         this._disconnected = true
         if (this._parent !== null) {
             delete this._parent._children[this.id]
+            if (this._name !== null) {
+                delete this._parent._namedChildren[this._name]
+            }
             if (this.isWaitingState() && !this.isAbleToWait()) {
                 this._parent.waitFinish()
             }
         }
-        this._parent = null
         for (var id in this._children) {
             this._children[id].disconnect()
         }
-        if ("destroy" in this) {
-            this.destroy()
+        this._notify("destroy")
+        if (this._parent !== null) {
+            this._parent._notify("childRemoved", this, this._name)
         }
+        this._name = null
+        this._parent = null
         notifyReactChanged(this)
     }
 
     getId = () => this.id
+
+    _notify = (method, ...args) => (method in this) ? this[method].apply(this, args) : null
 
     static createRootComponent (...args) {
         return createReactComponent(new this(null, args))
