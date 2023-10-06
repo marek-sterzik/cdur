@@ -18,5 +18,7 @@ const isCallable = (f) => {
 
 const alwaysCallable = (f, resolveFunction) => (((resolveFunction || (resolveFunction === undefined)) && isCallable(f)) ? f : () => f)
 
-export default {isPromise, isCallable}
-export {isPromise, isCallable, alwaysCallable}
+const isSubclassOf = (A, B) => (A.prototype instanceof B) || A === B
+
+export default {isPromise, isCallable, isSubclassOf}
+export {isPromise, isCallable, alwaysCallable, isSubclassOf}

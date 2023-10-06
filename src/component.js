@@ -7,8 +7,17 @@ import consts from "./consts.js"
 
 var componentId = 1
 
+const viewMap = new WeakMap
+
 export default class Component
 {
+    static get View()
+    {
+        if (!viewMap.has(this)) {
+            viewMap.set(this, createReactComponent(this, true))
+        }
+        return viewMap.get(this)
+    }
     constructor(parent, args) {
         this.id = "" + (componentId++)
         this._disconnected = false
@@ -28,12 +37,9 @@ export default class Component
         this._parentWaiting = false
         this._mountedReactComponents = []
         this._reactChildrenState = {"children": null, "available": false}
-        const view = createReactComponent(this)
-        this.view = () => view
+        this.View = createReactComponent(this, false)
         this._children = {}
-        if ("init" in this) {
-            this.init(...args)
-        }
+        this._notify("init", ...args)
     }
 
     getAsyncWriteMode = () => consts.AW_NONE
@@ -88,30 +94,24 @@ export default class Component
 
     createSubComponent = (subComponentClass, ...args) => {
         const component = this._createSubComponent(subComponentClass, ...args)
-        this._notify("childAdded", component.instance(), null)
+        this._notify("childAdded", component, null)
         return component
     }
-    _createSubComponent = (subComponentClass, ...args) => (new subComponentClass(this, args)).view()
+    _createSubComponent = (subComponentClass, ...args) => (new subComponentClass(this, args))
 
     createNamedSubComponent = (name, subComponentClass, ...args) => {
         this.disconnectNamedSubComponent(name)
         const component = this._createSubComponent(subComponentClass, ...args)
-        const componentInstance = component.instance()
-        componentInstance._name = name
+        component._name = name
         if (name !== null) {
-            this._namedChildren[name] = componentInstance.id
+            this._namedChildren[name] = component.id
         }
-        this._notify("childAdded", componentInstance, name)
+        this._notify("childAdded", component, name)
         return component
 
     }
 
     getNamedSubComponent = (name) => {
-        const component = this._getNamedSubComponent(name)
-        return (component !== null) ? component.view() : null
-    }
-
-    _getNamedSubComponent = (name) => {
         if (name !== null && name in this._namedChildren) {
             const id = this._namedChildren[name]
             if (id in this._children) {
@@ -122,7 +122,7 @@ export default class Component
     }
 
     disconnectNamedSubComponent = (name) => {
-        const component = this._getNamedSubComponent(name)
+        const component = this.getNamedSubComponent(name)
         if (component !== null) {
             component.disconnect()
         }
@@ -168,6 +168,6 @@ export default class Component
     _notify = (method, ...args) => (method in this) ? this[method].apply(this, args) : null
 
     static createRootComponent (...args) {
-        return createReactComponent(new this(null, args))
+        return new this(null, args)
     }
 }
