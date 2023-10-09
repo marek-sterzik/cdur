@@ -8,6 +8,15 @@ Therefore _C.dur._ components are useful for handling asynchronous requests. _C.
 
 **API of the library should be considered as unstable until version 1.0.0 of the library is released.** Lots of work still needs to be done. The whole functionality needs to be covered by tests. And the documentation should be improved.
 
+## Design goals
+
+The _C.dur._ library is designed to add some common functionality into React, which is hard to be implemented in pure React. _C.dur._ tries to get around the main disadvantage of React - the React fundamental connection between the lifecycle of a component and its visual representation. _C.dur._ therefore allows to maintain components having their liecycle independent on the visual representation. I.e. _C.dur._ components may exist even in a moment, they are not rendered, while still being able to maintain and change their state. This allows to deal much more better with asynchronous requests being integrated into React. The main goals of _C.dur._ are therefore:
+
+* Provide an easy way how to deal with _durable_ components. I.e. deal with components which state is independent on their visual representation.
+* Make asynchronous requests handling as easy as possible. Asynchronous component state changes needs to be supported natively.
+* Provide native support for waiting for asynchronous request. It is expected, that waiting for any asynchronous request is so common in real apps, that there should be some universal functionality handling this problem with minimal overhead for a particular instnce of the waiting problem.
+
+
 ## Installation
 
 ```bash
