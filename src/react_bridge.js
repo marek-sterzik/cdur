@@ -11,7 +11,7 @@ class ComponentView extends React.Component
 const createReactComponent = (component, classComponent) => classComponent ? createReactClassComponent(component) : createReactInstanceComponent(component)
 
 const createReactClassComponent = (component) => function (props) {
-    return React.createElement(Mount, {...props, "component": component}, props.children)
+    return React.createElement(MountClass, {...props, "component": component}, props.children)
 }
 
 const createReactInstanceComponent = (component) => class extends ComponentView {
@@ -83,7 +83,7 @@ const createReactInstanceComponent = (component) => class extends ComponentView 
 }
 
 
-class Mount extends React.Component
+class MountClass extends React.Component
 {
     static contextType = CdurContext
 
@@ -129,36 +129,30 @@ class Mount extends React.Component
     instantiateComponent = () => {
         const parentSlot = this.getComponentParentSlot()
         const creationArgs = this.getComponentArgs()
-        const context = this.context
         var componentInstance
-        var argsAllowed = false
-        if (this.componentDescriptor instanceof Component) {
-            this.durable = true
-            componentInstance = this.componentDescriptor
-        } else if (isSubclassOf(this.componentDescriptor, Component)){
-            argsAllowed = true
-            const args = (creationArgs !== null) ? creationArgs : []
-            if (parentSlot === null || context === null) {
-                this.durable = false
-                componentInstance = this.componentDescriptor.createRootComponent(...args)
-            } else {
-                this.durable = true
-                componentInstance = context.getNamedSubComponent(parentSlot)
-                if (componentInstance === null || !(Object.getPrototypeOf(componentInstance) === this.componentDescriptor.prototype)) {
-                    componentInstance = context.createNamedSubComponent(
-                        parentSlot,
-                        this.componentDescriptor,
-                        ...args
-                    )
-                }
-            }
-        } else {
+
+        if (!isSubclassOf(this.componentDescriptor, Component)){
             throw "Invalid object passed to cdur mount. Only classes or instances of cdur components may be passed."
         }
-        if (!argsAllowed && (creationArgs !== null || parentSlot !== null)) {
-            throw "creationArguments and/or parentSlot not allowed when rendering C.dur. component instances"
+
+        const args = (creationArgs !== null) ? creationArgs : []
+
+        if (parentSlot === null || this.context === null) {
+            this.durable = false
+            componentInstance = this.componentDescriptor.createRootComponent(...args)
+        } else {
+            this.durable = true
+            componentInstance = this.context.getNamedSubComponent(parentSlot)
+            if (componentInstance === null || !(Object.getPrototypeOf(componentInstance) === this.componentDescriptor.prototype)) {
+                componentInstance = this.context.createNamedSubComponent(
+                    parentSlot,
+                    this.componentDescriptor,
+                    ...args
+                )
+            }
         }
-        return componentInstance.View
+
+        return componentInstance
     }
 
     componentDidUpdate = () => {
@@ -179,7 +173,7 @@ class Mount extends React.Component
         if (this.state.component === null) {
             return null
         }
-        return React.createElement(this.state.component, {}, this.props.children)
+        return React.createElement(this.state.component.View, {}, this.props.children)
     }
 }
 
